@@ -2,31 +2,23 @@ name: Angular CI
 
 on:
   push:
-    branches: [ "feature-ci-cd", "deveploy", "qa", "main"]
-
+    branches: [ "feature-ci-cd", "deveploy", "qa", "main" ]
 
 jobs:
-  build:
+  docker-build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'npm'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Build Docker image
+        run: |
+          docker build -t angular-project:${{ github.sha }} .
 
-      - name: Build Angular app
-        run: npm run build -- --configuration production
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: angular-build
-          path: dist/
+      - name: Verify Docker image
+        run: |
+          docker images
